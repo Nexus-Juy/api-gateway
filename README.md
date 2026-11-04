@@ -41,6 +41,24 @@ Antes de reenviar una petición, el gateway revisa el token del header `Authoriz
 `JWT_SECRET` llega por variable de entorno y no tiene valor por defecto: si falta o tiene menos de 32
 caracteres, el gateway **no arranca**.
 
+## Seguridad: autorización por roles (S3-07)
+
+Después del filtro de JWT, otro filtro revisa los roles del token. Son las reglas generales; el detalle por
+rol y la autorización por pertenencia (un cliente solo ve sus envíos, un repartidor solo los asignados)
+siguen en cada servicio.
+
+| Ruta | Método | Roles que pasan |
+|---|---|---|
+| `/api/v1/auth/**` | todos | público (sin token) |
+| `/api/v1/repartidores/**` | `POST`, `PUT`, `PATCH`, `DELETE` | `ADMIN` |
+| `/api/v1/repartidores/**` | `GET` | `ADMIN`, `CLIENTE`, `REPARTIDOR` |
+| `/api/v1/envios/**` | todos | `ADMIN`, `CLIENTE`, `REPARTIDOR` (el detalle lo resuelve shipment-service) |
+
+Si el rol no alcanza, el gateway responde **403** con un `ProblemDetail` (título `Acceso denegado`) y la
+petición no llega al servicio. Por ejemplo, un `CLIENTE` que hace `POST /api/v1/repartidores` recibe 403
+del gateway; un `REPARTIDOR` que hace `POST /api/v1/envios` pasa el gateway y es shipment-service el que
+responde 403 con su propia regla.
+
 ## Configuración
 
 El puerto, el registro en Eureka y las rutas no están en este repositorio: los entrega el
@@ -94,3 +112,5 @@ mínimo del JDK por cada servicio) y le arman al gateway las mismas rutas apunta
 | `EnrutamientoTest` | Cada path llega a su servicio, con el mismo método, path y cuerpo; un path sin ruta da 404 |
 | `JwtValidadorTest` | Secreto ausente o corto, token válido, sin roles, otra firma, otro algoritmo y texto mal formado |
 | `FiltroJwtGlobalTest` | Token válido (y header reenviado sin cambios), ausente, no Bearer, mal formado, vencido, firma alterada y login sin token |
+| `ReglasDeAccesoTest` | La tabla de reglas por rol, ruta y método, un token sin roles y una ruta sin regla propia |
+| `FiltroRolesGlobalTest` | CLIENTE con `POST /repartidores` → 403; ADMIN llega a courier; REPARTIDOR con `POST /envios` llega a shipment; token sin roles → 403 |
