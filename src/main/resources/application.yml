@@ -1,0 +1,11 @@
+# La configuración de este servicio (puerto 8066, registro en Eureka y rutas) vive en el repositorio
+# logitrack-config, archivos api-gateway.yml, api-gateway-dev.yml y api-gateway-prod.yml, y la entrega
+# el config-server al arrancar.
+# Acá solo queda lo necesario para saber quién es el servicio y dónde buscar su configuración.
+spring:
+  application:
+    name: api-gateway
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+  config:
+    import: "optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}"

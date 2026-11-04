@@ -1,0 +1,12 @@
+# Tests de api-gateway: sin config-server y sin Eureka.
+# Las rutas apuntan a servicios falsos que levantan los propios tests (ver ServiciosFalsos).
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    config:
+      enabled: false
+
+eureka:
+  client:
+    enabled: false

@@ -1,0 +1,12 @@
+target/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+HELP.md
+
+# Entorno local
+.env
+*.log
+.git
