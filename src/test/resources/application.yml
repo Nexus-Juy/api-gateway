@@ -10,3 +10,7 @@ spring:
 eureka:
   client:
     enabled: false
+
+# Mismo secreto con el que los tests firman los JWT (ver TokensDePrueba).
+jwt:
+  secret: ClaveSecretaDeTestSuperSeguraParaTestsUnitariosLogiTrack2026!

@@ -9,6 +9,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Enrutamiento (S3-05): cada path llega a su microservicio, sin reescribir el path.
+ * <p>
+ * Desde S3-06 las rutas de courier y shipment piden token, así que esas peticiones van con uno de ADMIN.
+ * </p>
  */
 class EnrutamientoTest extends GatewayTestBase {
 
@@ -40,7 +43,7 @@ class EnrutamientoTest extends GatewayTestBase {
     @Test
     @DisplayName("/api/v1/repartidores/** llega a courier-service")
     void repartidoresLleganACourier() throws Exception {
-        HttpResponse<String> respuesta = enviar("GET", "/api/v1/repartidores", null, null);
+        HttpResponse<String> respuesta = enviar("GET", "/api/v1/repartidores", TokensDePrueba.bearer("ADMIN"), null);
 
         assertThat(respuesta.statusCode()).isEqualTo(200);
         assertThat(respuesta.body()).contains("courier-service");
@@ -55,7 +58,7 @@ class EnrutamientoTest extends GatewayTestBase {
     @Test
     @DisplayName("/api/v1/envios/** llega a shipment-service")
     void enviosLleganAShipment() throws Exception {
-        HttpResponse<String> respuesta = enviar("GET", "/api/v1/envios/123/historial", null, null);
+        HttpResponse<String> respuesta = enviar("GET", "/api/v1/envios/123/historial", TokensDePrueba.bearer("ADMIN"), null);
 
         assertThat(respuesta.statusCode()).isEqualTo(200);
         assertThat(respuesta.body()).contains("shipment-service");
