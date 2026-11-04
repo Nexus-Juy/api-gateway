@@ -6,6 +6,18 @@ spring:
   cloud:
     config:
       enabled: false
+    gateway:
+      server:
+        webflux:
+          # CORS igual que en logitrack-config/api-gateway.yml (S3-08), con orígenes fijos para los tests.
+          globalcors:
+            add-to-simple-url-handler-mapping: true
+            cors-configurations:
+              '[/**]':
+                allowed-origins: http://localhost:3000,http://localhost:5173
+                allowed-methods: GET,POST,PUT,PATCH,OPTIONS
+                allowed-headers: Authorization,Content-Type
+                max-age: 3600
 
 eureka:
   client:

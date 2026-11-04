@@ -59,6 +59,21 @@ petición no llega al servicio. Por ejemplo, un `CLIENTE` que hace `POST /api/v1
 del gateway; un `REPARTIDOR` que hace `POST /api/v1/envios` pasa el gateway y es shipment-service el que
 responde 403 con su propia regla.
 
+## CORS centralizado (S3-08)
+
+CORS se configura **una sola vez**, en el gateway (`api-gateway.yml` de `logitrack-config`), y no en cada
+servicio. Así un frontend en otro origen (por ejemplo `http://localhost:5173`) puede llamar a la API.
+
+| | |
+|---|---|
+| Orígenes permitidos | `http://localhost:3000` y `http://localhost:5173` (se cambian con la variable `CORS_ALLOWED_ORIGINS`, separados por coma) |
+| Métodos | `GET`, `POST`, `PUT`, `PATCH`, `OPTIONS` |
+| Headers | `Authorization`, `Content-Type` |
+
+Las peticiones **preflight** (`OPTIONS` que manda el navegador antes de la petición real) las contesta el
+gateway sin pedir token. Con un origen que no está en la lista, la respuesta no trae los headers CORS y el
+navegador bloquea la llamada.
+
 ## Configuración
 
 El puerto, el registro en Eureka y las rutas no están en este repositorio: los entrega el
@@ -66,7 +81,7 @@ El puerto, el registro en Eureka y las rutas no están en este repositorio: los 
 
 | Archivo | Qué tiene |
 |---|---|
-| `api-gateway.yml` | Puerto `8066` y las tres rutas |
+| `api-gateway.yml` | Puerto `8066`, las tres rutas y CORS |
 | `api-gateway-dev.yml` | Eureka en `http://localhost:8065/eureka/` y el endpoint `/actuator/gateway/routes` |
 | `api-gateway-prod.yml` | Eureka en `http://eureka-server:8065/eureka/` (Docker) |
 
@@ -75,6 +90,7 @@ El puerto, el registro en Eureka y las rutas no están en este repositorio: los 
 | `CONFIG_SERVER_URL` | URL del config-server | `http://localhost:8888` |
 | `SPRING_PROFILES_ACTIVE` | Perfil de configuración | `dev` |
 | `JWT_SECRET` | Secreto con el que se validan los JWT (el mismo de security-service, mínimo 32 caracteres) | — (obligatoria) |
+| `CORS_ALLOWED_ORIGINS` | Orígenes permitidos para CORS, separados por coma | `http://localhost:3000,http://localhost:5173` |
 
 ## Ejecutar
 
@@ -114,3 +130,4 @@ mínimo del JDK por cada servicio) y le arman al gateway las mismas rutas apunta
 | `FiltroJwtGlobalTest` | Token válido (y header reenviado sin cambios), ausente, no Bearer, mal formado, vencido, firma alterada y login sin token |
 | `ReglasDeAccesoTest` | La tabla de reglas por rol, ruta y método, un token sin roles y una ruta sin regla propia |
 | `FiltroRolesGlobalTest` | CLIENTE con `POST /repartidores` → 403; ADMIN llega a courier; REPARTIDOR con `POST /envios` llega a shipment; token sin roles → 403 |
+| `CorsTest` | Preflight con origen permitido (headers CORS, sin token), origen no permitido, método no permitido y petición real con CORS |
